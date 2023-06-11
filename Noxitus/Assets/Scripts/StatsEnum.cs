@@ -21,7 +21,6 @@ public enum StatsEnum
     LessDetectability,
     RevivalChance,
     PercentExtraMoney
-    
 }
 
 
@@ -30,4 +29,37 @@ public enum SelectTree
     Special,
     Combat,
     Survival
+}
+
+public enum WeaponType
+{
+    MeleeWeapon,
+    DistanceWeapon,
+    CosmicWeapon
+}
+
+public enum WeaponList
+{
+    Sword,
+    Katana,
+    Bow,
+    Crossbow,
+    Archtronic,
+    PlasmaKatana
+}
+
+public enum WeaponStat
+{
+   BaseDamage,
+   BaseSeriesDamage,
+   BaseEnergyAfterDealingDamage,
+   BaseSpeedAttack,
+   BaseCriticalDamage,
+   BaseCriticalChance,
+   BaseStunningChance,
+   BaseInstantKillChance,
+   BaseCollectPercentageHealth,
+   DeBuffSpeed,
+   DeBuffRollCooldown,
+   DeBuffDetectability
 }

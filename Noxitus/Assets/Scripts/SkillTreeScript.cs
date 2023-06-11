@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
+
 using TMPro;
-using Unity.VisualScripting;
+
 using UnityEngine;
 
 public class SkillTreeScript : MonoBehaviour
@@ -41,7 +41,7 @@ public class SkillTreeScript : MonoBehaviour
         pointsInSpecial = 0;
         pointsInCombat = 0;
         pointsInSurvival = 0;
-        player.GetHero().RestartStats();
+        player.GetHero().SetBaseStats();
     }
 
     public bool GetIsReset()
@@ -86,11 +86,11 @@ public class SkillTreeScript : MonoBehaviour
 
             if (selectedSkill.GetIsSpecial())
             {
-                player.GetHero().IncreaseBuffStat(selectedSkill.GetStatName(), selectedSkill.GetStatValue());
+                player.GetHero().IncreaseBuffStat(selectedSkill.GetStatName(),selectedSkill.GetSelectWeaponType(), selectedSkill.GetStatValue());
             }
             else
             {
-                player.GetHero().IncreaseStat(selectedSkill.GetStatName(), selectedSkill.GetStatValue());
+                player.GetHero().IncreaseStat(selectedSkill.GetStatName(),selectedSkill.GetSelectWeaponType(), selectedSkill.GetStatValue());
             }
         }
     }
