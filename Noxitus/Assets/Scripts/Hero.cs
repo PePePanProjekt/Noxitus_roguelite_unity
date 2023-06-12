@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
-
+using DefaultNamespace;
+using TreeEditor;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
 
@@ -30,6 +33,9 @@ public abstract class Hero : MonoBehaviour
     private MoneyScript moneyDisplay;
     private LevelScript lvlDisplay;
     private SkillTreeScript skillTree;
+    
+    
+    private System.Random random = new System.Random();
     void Awake()
     {
         healthBar = GameObject.FindGameObjectWithTag("HealthBar").GetComponent<HealthBarScript>(); 
@@ -41,7 +47,7 @@ public abstract class Hero : MonoBehaviour
         Init();
         InvokeRepeating(nameof(Regenerate), 1.0f, 1.0f);
     }
-
+    
     private void Update()
     {
         var inputVector = new Vector2(0, 0);
@@ -107,12 +113,51 @@ public abstract class Hero : MonoBehaviour
         inputVector = inputVector.normalized;
 
         var moveDir = new Vector3(inputVector.x, 0, inputVector.y);
-        transform.position += moveDir * (GetStat(StatsEnum.MoveSpeed) * Time.deltaTime);
 
+        var playerSize = .5f;
+
+        bool canMove = !Physics.Raycast(transform.position, moveDir, playerSize);
+
+        if (canMove)
+        {
+            transform.position += moveDir * (GetStat(StatsEnum.MoveSpeed) * Time.deltaTime);
+            
         if(isRoll){
             transform.position += moveDir * (GetStat(StatsEnum.MoveSpeed) * Time.deltaTime);
         }
+        }
 
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            transform.position = new Vector3(0, 0, 0);
+            SceneManager.LoadScene("Base");
+        }
+        if (Input.GetKeyDown(KeyCode.F3))
+        {
+            transform.position = new Vector3(0, 0, 0);
+            SceneManager.LoadScene("Trader_Metal");
+        }
+        if (Input.GetKeyDown(KeyCode.F4))
+        {
+            transform.position = new Vector3(0, 0, 0);
+            SceneManager.LoadScene("Trader_Forest");
+        }
+        if (Input.GetKeyDown(KeyCode.F2))
+        {
+            SceneEnum[] allMaps = (SceneEnum[])Enum.GetValues(typeof(SceneEnum));
+            var currentScene = SceneManager.GetActiveScene().name;
+            SceneEnum randomMap;
+            do
+            {
+                int randomIndex = random.Next(allMaps.Length);
+                randomMap = allMaps[randomIndex];
+            } while (currentScene == randomMap.ToString());
+            
+            transform.position = new Vector3(0, 0, 0);
+            SceneManager.LoadScene(randomMap.ToString());
+        }   
+        
+     
         isRunning = moveDir != Vector3.zero;
 
         transform.forward = Vector3.Slerp(transform.forward,moveDir,Time.deltaTime * rotateSpeed);

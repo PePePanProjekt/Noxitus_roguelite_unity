@@ -9,6 +9,45 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: c8df9ebf0e8a00e489eeba0bfd9b6893
   - enabled: 1
-    path: Assets/Scenes/MainScene.unity
+    path: Assets/Scenes/Base.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/Trader_Metal.unity
+    guid: dcd90009793419e40bc76be853c881a9
+  - enabled: 1
+    path: Assets/Scenes/Trader_Forest.unity
+    guid: decd83a4418b19949a557258f72470f0
+  - enabled: 1
+    path: Assets/Scenes/Forest Maps/Forest1.unity
+    guid: afc23efc55502ea4a94913f0c9869433
+  - enabled: 1
+    path: Assets/Scenes/Forest Maps/Forest2.unity
+    guid: 7f355cf89aa44014992e142b775cfede
+  - enabled: 1
+    path: Assets/Scenes/Forest Maps/Forest_Boss.unity
+    guid: 3693c54d745bdcf4fa7ab370bca87549
+  - enabled: 1
+    path: Assets/Scenes/Beach Maps/Beach1.unity
+    guid: 90eac830c250bd448b1f04c227ed53c6
+  - enabled: 1
+    path: Assets/Scenes/Beach Maps/Beach2.unity
+    guid: bd483a22b37e32e499871ea8f32ab348
+  - enabled: 1
+    path: Assets/Scenes/Canyon/Canyon1.unity
+    guid: eb813607aa0603c4399adaac697d9983
+  - enabled: 1
+    path: Assets/Scenes/Rabbits Maps/Rabbits.unity
+    guid: e4b93191d560da441a5b5b9d981c747f
+  - enabled: 1
+    path: Assets/Scenes/Metallic Maps/Metallic1.unity
+    guid: 8df14463898b4f843ab3c3b4846e0970
+  - enabled: 1
+    path: Assets/Scenes/Metallic Maps/Metallic2.unity
+    guid: 9b275cbe04ca3124fbf331cf009209cc
+  - enabled: 1
+    path: Assets/Scenes/Metallic Maps/Metallic3.unity
+    guid: 5cf5587a9f169924e862e5100cb89809
+  - enabled: 1
+    path: Assets/Scenes/Metallic Maps/Metallic_Boss.unity
+    guid: 915ad3e2856476a4a91c873b6bed87ea
   m_configObjects: {}

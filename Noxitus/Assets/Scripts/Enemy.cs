@@ -28,6 +28,7 @@ public class Enemy : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        player = Player.Instance;
         var position = transform.position;
         dis = Vector3.Distance(position, playerPos.position);
         disHome = Vector3.Distance(position, startPos);
