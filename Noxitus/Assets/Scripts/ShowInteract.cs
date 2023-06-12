@@ -17,7 +17,7 @@ public class ShowInteract : MonoBehaviour
 
     public void Show(InteractObject item)
     {
-        if (itemDetected != null)
+        if (itemDetected is not null)
         {
             if (itemDetected.GetDistance() > item.GetDistance())
             {
@@ -40,12 +40,12 @@ public class ShowInteract : MonoBehaviour
     
     public void InteractButton()
     {
-        if (itemDetected != null)
+        if (itemDetected is not null)
         {
             itemDetected.Interact();
         }
     }
-    
+
     public void Hide(InteractObject item)
     {
         if (itemDetected == item)
@@ -55,7 +55,4 @@ public class ShowInteract : MonoBehaviour
         }
         
     }
-    
-    
-    
 }

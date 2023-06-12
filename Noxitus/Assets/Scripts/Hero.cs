@@ -52,7 +52,6 @@ public abstract class Hero : MonoBehaviour
     
     void Awake()
     {
-        Debug.Log("startAwake");
         mousePosInMap = gameObject.AddComponent<MousePosition>();
         healthBar = GameObject.FindGameObjectWithTag("HealthBar").GetComponent<HealthBarScript>(); 
         energyBar = GameObject.FindGameObjectWithTag("EnergyBar").GetComponent<EnergyBarScript>();
@@ -63,7 +62,6 @@ public abstract class Hero : MonoBehaviour
         showInteract = GameObject.FindGameObjectWithTag("Notification").GetComponent<ShowInteract>();
         weaponController = GameObject.FindGameObjectWithTag("Player").GetComponent<WeaponController>();
         inventory = GameObject.FindGameObjectWithTag("Inventory").GetComponent<InventoryScript>();
-        Debug.Log("endAwake");
         Init();
         InvokeRepeating(nameof(Regenerate), 1.0f, 1.0f);
     }
@@ -204,7 +202,6 @@ public abstract class Hero : MonoBehaviour
     //init
     void Init()
     {
-        Debug.Log("init");
         SetBaseStats();
         currentlyHealth = maxHealth;
         currentlyEnergy = 0;
@@ -224,14 +221,16 @@ public abstract class Hero : MonoBehaviour
         float[] createdStat = { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
         firstWeapon = 0;
         Weapon newFirst = gameObject.AddComponent<Sword>();
-        newFirst.SetWeapon(GetAllStats(), GetAllBuffStats(), createdStat);
+        newFirst.SetStats(createdStat);
+        newFirst.SetWeapon(GetAllStats(), GetAllBuffStats());
         
         StartWeapon(newFirst);
 
         float[] gfggg = { 1, 2, 3, 4, 5, 5, 5, 5, 5, 5, 5, 5 };
         firstWeapon = 0;
         Weapon rrrr = gameObject.AddComponent<Crossbow>();
-        rrrr.SetWeapon(GetAllStats(), GetAllBuffStats(), gfggg);
+        newFirst.SetStats(gfggg);
+        rrrr.SetWeapon(GetAllStats(), GetAllBuffStats());
 
         EquipNewWeapon(rrrr, 3);
     }

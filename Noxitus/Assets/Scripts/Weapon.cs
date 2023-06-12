@@ -8,11 +8,8 @@ public class Weapon : MonoBehaviour
     private float deBuffSpeed, deBuffRollCooldown, deBuffDetectability;
     private float[] baseStat, baseBuffStat;
 
-    public void SetWeapon(float[][] bStat, float[][] bBStat, float[] createdStat)
+    public void SetStats(float[] createdStat)
     {
-        baseStat = bStat[GetWeaponType()];
-        baseBuffStat = bBStat[GetWeaponType()];
-
         baseDamage = createdStat[(int)WeaponStat.BaseDamage];
         baseSeriesDamage =createdStat[(int)WeaponStat.BaseSeriesDamage];
         baseCriticalDamage = createdStat[(int)WeaponStat.BaseCriticalDamage];
@@ -28,8 +25,12 @@ public class Weapon : MonoBehaviour
         deBuffDetectability = createdStat[(int)WeaponStat.DeBuffDetectability];
     }
     
-  
-
+    public void SetWeapon(float[][] bStat, float[][] bBStat)
+    {
+        baseStat = bStat[GetWeaponType()];
+        baseBuffStat = bBStat[GetWeaponType()];
+    }
+    
     public float GetBaseDamage()
      {
          return baseDamage;

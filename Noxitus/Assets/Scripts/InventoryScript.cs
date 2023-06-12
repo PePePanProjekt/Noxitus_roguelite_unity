@@ -11,7 +11,7 @@ public class InventoryScript : MonoBehaviour
     [SerializeField] private TextMeshProUGUI slot4;
     [SerializeField] private TextMeshProUGUI slot5;
     [SerializeField] private TextMeshProUGUI slot6;
-
+    [SerializeField] private TextMeshProUGUI newW;
     private TextMeshProUGUI[] allText;
 
     [SerializeField] private Image img1;
@@ -25,6 +25,7 @@ public class InventoryScript : MonoBehaviour
     [SerializeField] private Player player;
     private bool isDisplay;
     private Weapon[] allWeapon;
+    private Weapon newWep;
     private int selectedWeapon;
     private void Awake()
     {
@@ -40,17 +41,7 @@ public class InventoryScript : MonoBehaviour
         isDisplay = !isDisplay;
         inter.SetActive(isDisplay);
 
-        for (int i = 0; i < 6; i++)
-        {
-            if (allWeapon[i] is not null)
-            {
-                allText[i].text = allWeapon[i].GetStats();
-            }
-            else
-            {
-                allText[i].text = "Empty";
-            }
-        }
+        ShowEquipWeapon();
     }
     
     public void Click1()
@@ -101,14 +92,49 @@ public class InventoryScript : MonoBehaviour
         }
     }
     
+    public void NewWeapon(Weapon wep)
+    {
+        newWep = wep;
+        newW.text = wep.GetStats();
+        Debug.Log(wep.GetStats());
+    }
+    
+    public void GetNewWeapon()
+    {
+        if (newWep is not null)
+        {
+            player.GetHero().EquipNewWeapon(newWep, selectedWeapon);
+        }
+
+        ShowEquipWeapon();
+        newWep = null;
+        newW.text = "";
+    }
+
+    private void ShowEquipWeapon()
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            if (allWeapon[i] is not null)
+            {
+                allText[i].text = allWeapon[i].GetStats();
+            }
+            else
+            {
+                allText[i].text = "Empty";
+            }
+        }
+    }
+    
+    
     public void ResetSelected()
     {
-       img1.color = Color.red;
-       img2.color = Color.red;
-       img3.color = Color.red;
-       img4.color = Color.red;
-       img5.color = Color.red;
-       img6.color = Color.red;
+       img1.color = Color.gray;
+       img2.color = Color.gray;
+       img3.color = Color.gray;
+       img4.color = Color.gray;
+       img5.color = Color.gray;
+       img6.color = Color.gray;
     }
     
 }

@@ -21,6 +21,7 @@ public class InteractObject : DetectPlayer
     
     public void Interact()
     {
+        PickUpItem();
         Destroy(gameObject);
         PlayerAway();
     }
@@ -28,6 +29,11 @@ public class InteractObject : DetectPlayer
     protected override void PlayerDetected()
     {
         showInteract.Show(this);
+    }
+    
+    public virtual void PickUpItem()
+    {
+     
     }
     
     protected override void PlayerAway()

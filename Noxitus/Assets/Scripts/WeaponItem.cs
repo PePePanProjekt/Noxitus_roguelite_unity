@@ -1,28 +1,32 @@
 
 
 using System;
+using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class WeaponItem : InteractObject
 {
     private float[] createdStat = new float[12];
-    private WeaponList nameType;
-
-
+    
+    private InventoryScript inv;
+    Weapon generatedWeapon;
+    
     protected override void Init()
     {
         RandomCreate();
+        inv = GameObject.FindGameObjectWithTag("Inventory").GetComponent<InventoryScript>();
+        
     }
     
     public void RandomCreate()
     {
         
-    int randomWeapon = Random.Range(0, 11);
+    int randomWeapon = Random.Range(0, 5);
 
     switch (randomWeapon)
     {
         case 0:
-            nameType = WeaponList.Sword;
+            generatedWeapon = gameObject.AddComponent<Sword>();
             createdStat[(int)WeaponStat.BaseDamage] = Random.Range(3.0f, 7.0f);
             createdStat[(int)WeaponStat.BaseSeriesDamage] = Random.Range(0.0f, 2.0f);
             createdStat[(int)WeaponStat.BaseEnergyAfterDealingDamage] = Random.Range(1.0f, 5.0f);
@@ -35,9 +39,10 @@ public class WeaponItem : InteractObject
             createdStat[(int)WeaponStat.DeBuffSpeed] = Random.Range(0.2f, 0.4f);
             createdStat[(int)WeaponStat.DeBuffRollCooldown] = Random.Range(0.2f, 0.4f);
             createdStat[(int)WeaponStat.DeBuffDetectability] = Random.Range(0.2f, 2.0f);
+            generatedWeapon.SetStats(createdStat);
             break;
         case 1:
-            nameType = WeaponList.Katana;
+            generatedWeapon = gameObject.AddComponent<Katana>();
             createdStat[(int)WeaponStat.BaseDamage] = Random.Range(3.0f, 7.0f);
             createdStat[(int)WeaponStat.BaseSeriesDamage] = Random.Range(0.0f, 2.0f);
             createdStat[(int)WeaponStat.BaseEnergyAfterDealingDamage] = Random.Range(1.0f, 5.0f);
@@ -50,9 +55,10 @@ public class WeaponItem : InteractObject
             createdStat[(int)WeaponStat.DeBuffSpeed] = Random.Range(0.2f, 0.4f);
             createdStat[(int)WeaponStat.DeBuffRollCooldown] = Random.Range(0.2f, 0.4f);
             createdStat[(int)WeaponStat.DeBuffDetectability] = Random.Range(0.2f, 2.0f);
+            generatedWeapon.SetStats(createdStat);
             break;
         case 2:
-            nameType = WeaponList.Bow;
+            generatedWeapon = gameObject.AddComponent<Bow>();
             createdStat[(int)WeaponStat.BaseDamage] = Random.Range(3.0f, 7.0f);
             createdStat[(int)WeaponStat.BaseSeriesDamage] = Random.Range(0.0f, 2.0f);
             createdStat[(int)WeaponStat.BaseEnergyAfterDealingDamage] = Random.Range(1.0f, 5.0f);
@@ -65,9 +71,10 @@ public class WeaponItem : InteractObject
             createdStat[(int)WeaponStat.DeBuffSpeed] = Random.Range(0.2f, 0.4f);
             createdStat[(int)WeaponStat.DeBuffRollCooldown] = Random.Range(0.2f, 0.4f);
             createdStat[(int)WeaponStat.DeBuffDetectability] = Random.Range(0.2f, 2.0f);
+            generatedWeapon.SetStats(createdStat);
             break;
         case 3:
-            nameType = WeaponList.Crossbow;
+            generatedWeapon = gameObject.AddComponent<Crossbow>();
             createdStat[(int)WeaponStat.BaseDamage] = Random.Range(3.0f, 7.0f);
             createdStat[(int)WeaponStat.BaseSeriesDamage] = Random.Range(0.0f, 2.0f);
             createdStat[(int)WeaponStat.BaseEnergyAfterDealingDamage] = Random.Range(1.0f, 5.0f);
@@ -80,9 +87,10 @@ public class WeaponItem : InteractObject
             createdStat[(int)WeaponStat.DeBuffSpeed] = Random.Range(0.2f, 0.4f);
             createdStat[(int)WeaponStat.DeBuffRollCooldown] = Random.Range(0.2f, 0.4f);
             createdStat[(int)WeaponStat.DeBuffDetectability] = Random.Range(0.2f, 2.0f);
+            generatedWeapon.SetStats(createdStat);
             break;
         case 4:
-            nameType = WeaponList.Archtronic;
+            generatedWeapon = gameObject.AddComponent<Archtronic>();
             createdStat[(int)WeaponStat.BaseDamage] = Random.Range(3.0f, 7.0f);
             createdStat[(int)WeaponStat.BaseSeriesDamage] = Random.Range(0.0f, 2.0f);
             createdStat[(int)WeaponStat.BaseEnergyAfterDealingDamage] = Random.Range(1.0f, 5.0f);
@@ -95,9 +103,10 @@ public class WeaponItem : InteractObject
             createdStat[(int)WeaponStat.DeBuffSpeed] = Random.Range(0.2f, 0.4f);
             createdStat[(int)WeaponStat.DeBuffRollCooldown] = Random.Range(0.2f, 0.4f);
             createdStat[(int)WeaponStat.DeBuffDetectability] = Random.Range(0.2f, 2.0f);
+            generatedWeapon.SetStats(createdStat);
             break;
         case 5:
-            nameType = WeaponList.PlasmaKatana;
+            generatedWeapon = gameObject.AddComponent<PlasmaKatana>();
             createdStat[(int)WeaponStat.BaseDamage] = Random.Range(3.0f, 7.0f);
             createdStat[(int)WeaponStat.BaseSeriesDamage] = Random.Range(0.0f, 2.0f);
             createdStat[(int)WeaponStat.BaseEnergyAfterDealingDamage] = Random.Range(1.0f, 5.0f);
@@ -110,24 +119,26 @@ public class WeaponItem : InteractObject
             createdStat[(int)WeaponStat.DeBuffSpeed] = Random.Range(0.2f, 0.4f);
             createdStat[(int)WeaponStat.DeBuffRollCooldown] = Random.Range(0.2f, 0.4f);
             createdStat[(int)WeaponStat.DeBuffDetectability] = Random.Range(0.2f, 2.0f);
+            generatedWeapon.SetStats(createdStat);
             break;
     }
-    
- 
     }
     
     public override String GetNote()
     {
-        String note = "Name: " + nameType + "\n";
+        String note = "Name: " +  generatedWeapon.GetWeaponName() + "\n";
 
         for (int i = 0; i < 12; i++)
         {
             note += Enum.GetName(typeof(WeaponStat), i) + ": " + createdStat[i].ToString("F2")+ "\n";
         }
-        
         return note;
     }
     
-   
+    public override void PickUpItem()
+    {
+        Debug.Log(generatedWeapon.GetStats());
+        inv.NewWeapon(generatedWeapon);
+    }
 
 }
