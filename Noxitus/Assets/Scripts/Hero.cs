@@ -11,21 +11,36 @@ using Random = UnityEngine.Random;
 public abstract class Hero : MonoBehaviour
 {
     //Stats
-    [SerializeField] private int maxHealth = 100;
-    private int maxEnergy = 100;
-    private int maxExperience = 100;
+    private float maxHealth = 100f;
+    private const int MaxEnergy = 100;
+    private const int MaxExperience = 100;
+    
     private int  punchesSeries;
     private float rotateSpeed = 10f, detectability;
     
-    private float[] allStats = new float[Enum.GetNames(typeof(StatsEnum)).Length];
-    private float[] allBuffStats = new float[Enum.GetNames(typeof(StatsEnum)).Length];
+    private static readonly int StatsEnumNumber = Enum.GetNames(typeof(StatsEnum)).Length;
+
+    private readonly float[][] allStats = {
+        new float[StatsEnumNumber],
+        new float[StatsEnumNumber],
+        new float[StatsEnumNumber]
+    };
     
-    private int currentlyHealth, currentlyEnergy, money, level, currentlyExperience;
+    private readonly float[][] allBuffStats = {
+        new float[StatsEnumNumber],
+        new float[StatsEnumNumber],
+        new float[StatsEnumNumber]
+    };
+    
+    private int firstWeapon, secondWeapon;
+    private Weapon[] storageWeapon = new Weapon[6];
+    private float currentlyHealth;
+    private int currentlyEnergy, money, level, currentlyExperience;
 
     // Animation variables
-    private bool isRunning, isRoll, isAttack, isPickUp, isDeath, isGetHit, isStrongAttack;
-    private bool isSpecial, iSCombat;
-
+    private bool isRunning, isRoll, isAttack, isPickUp, isDeath, isGetHit, isStrongAttack, isShoot;
+    private bool isFury, isCombat;
+    
     //UI
     private HealthBarScript healthBar;
     private EnergyBarScript energyBar;
@@ -33,17 +48,26 @@ public abstract class Hero : MonoBehaviour
     private MoneyScript moneyDisplay;
     private LevelScript lvlDisplay;
     private SkillTreeScript skillTree;
+    private ShowInteract showInteract;
+    private MousePosition mousePosInMap;
+    private WeaponController weaponController;
+    private InventoryScript inventory;
+    
     
     
     private System.Random random = new System.Random();
     void Awake()
     {
+        mousePosInMap = gameObject.AddComponent<MousePosition>();
         healthBar = GameObject.FindGameObjectWithTag("HealthBar").GetComponent<HealthBarScript>(); 
         energyBar = GameObject.FindGameObjectWithTag("EnergyBar").GetComponent<EnergyBarScript>();
         experienceBar = GameObject.FindGameObjectWithTag("ExperienceBar").GetComponent<ExperienceBarScript>();
         moneyDisplay = GameObject.FindGameObjectWithTag("Money").GetComponent<MoneyScript>();
         lvlDisplay = GameObject.FindGameObjectWithTag("Lvl").GetComponent<LevelScript>();
         skillTree = GameObject.FindGameObjectWithTag("SkillTree").GetComponent<SkillTreeScript>();
+        showInteract = GameObject.FindGameObjectWithTag("Notification").GetComponent<ShowInteract>();
+        weaponController = GameObject.FindGameObjectWithTag("Player").GetComponent<WeaponController>();
+        inventory = GameObject.FindGameObjectWithTag("Inventory").GetComponent<InventoryScript>();
         Init();
         InvokeRepeating(nameof(Regenerate), 1.0f, 1.0f);
     }
@@ -69,25 +93,83 @@ public abstract class Hero : MonoBehaviour
             inputVector.x = +1;
         }
 
+        inputVector = inputVector.normalized;
+
+        var moveDir = new Vector3(inputVector.x, 0, inputVector.y);
+        transform.position += moveDir * (GetStat(StatsEnum.MoveSpeed) * Time.deltaTime);
+
+        isRunning = moveDir != Vector3.zero;
+
         if (Input.GetKeyUp(KeyCode.Space) && !isRoll)
         {
             StartCoroutine(ResetIsRoll());
             isRoll = true;
         }
+
+        if (isRoll)
+        {
+            transform.position += moveDir * (GetStat(StatsEnum.MoveSpeed) * Time.deltaTime);
+        }
+        
+        transform.forward = Vector3.Slerp(transform.forward,moveDir,Time.deltaTime * rotateSpeed);
         
         if (Input.GetKeyUp(KeyCode.Mouse0) && !isAttack)
         {
             StartCoroutine(ResetIsAttack());
             StartCoroutine(OutOfCombat());
             isAttack = true;
-            iSCombat = false;
+            isCombat = true;
             IncreaseEnergy(GetStat(StatsEnum.EnergyAfterDealingDamage));
             IncreaseExperience(20);
             punchesSeries++;
+            
+            if (Vector3.Distance(transform.position, mousePosInMap.GetMousePos()) < 5.0f)
+            {
+                transform.LookAt(mousePosInMap.GetMousePos());
+                
+                transform.position = mousePosInMap.GetMousePos();
+            }
+            else
+            {
+                transform.LookAt(mousePosInMap.GetMousePos());
+                transform.position = Vector3.MoveTowards(
+                    transform.position,
+                    mousePosInMap.GetMousePos(),
+                    5.0f
+                );
+            }
+        }
+        
+        if (Input.GetKey(KeyCode.Mouse0) && !isAttack)
+        {
+            StartCoroutine(ResetIsAttack());
+            StartCoroutine(OutOfCombat());
+            isAttack = true;
+            isCombat = true;
+            IncreaseEnergy(GetStat(StatsEnum.EnergyAfterDealingDamage));
+            IncreaseExperience(20);
+            punchesSeries++;
+            
+            if (Vector3.Distance(transform.position, mousePosInMap.GetMousePos()) < 5.0f)
+            {
+                transform.LookAt(mousePosInMap.GetMousePos());
+                
+                transform.position = mousePosInMap.GetMousePos();
+            }
+            else
+            {
+                transform.LookAt(mousePosInMap.GetMousePos());
+                transform.position = Vector3.MoveTowards(
+                    transform.position,
+                    mousePosInMap.GetMousePos(),
+                    5.0f
+                );
+            }
         }
         
         if (Input.GetKey(KeyCode.E) && !isPickUp)
         {
+            showInteract.InteractButton();
             AddMoney(5);
             StartCoroutine(ResetIsPickUp());
             isPickUp = true;
@@ -98,9 +180,19 @@ public abstract class Hero : MonoBehaviour
             skillTree.ShowMenu();
         }
         
-        if(Input.GetKeyDown(KeyCode.Q) && currentlyEnergy == maxEnergy)
+        if(Input.GetKeyDown(KeyCode.O))
         {
-            isSpecial = true;
+            inventory.ShowInventory();
+        }
+        
+        if(Input.GetKeyDown(KeyCode.Q))
+        {
+            
+        }
+        
+        if(Input.GetKeyDown(KeyCode.F) && currentlyEnergy == MaxEnergy)
+        {
+            isFury = true;
             SpecialSpell();
             GetBuffs();
         }
@@ -161,92 +253,52 @@ public abstract class Hero : MonoBehaviour
         isRunning = moveDir != Vector3.zero;
 
         transform.forward = Vector3.Slerp(transform.forward,moveDir,Time.deltaTime * rotateSpeed);
-    }
-    
-    public void RestartStats()
-    {
-        SetStat(StatsEnum.RegenerationRate, 1.0f); 
-        SetStat(StatsEnum.Damage, 5.0f); 
-        SetStat(StatsEnum.Resistance, 0.0f); 
-        SetStat(StatsEnum.CriticalDamage, 0.0f); 
-        SetStat(StatsEnum.AttackCooldown, 0.54f); 
-        SetStat(StatsEnum.DodgeChance, 1.0f); 
-        SetStat(StatsEnum.MoveSpeed, 7.0f);
-        SetStat(StatsEnum.ReflectingDamage, 1.0f);
-        SetStat(StatsEnum.RollCooldown, 0.48f);
-        SetStat(StatsEnum.CollectPercentageHealth, 0.0f);
-        SetStat(StatsEnum.CriticalHitChance, 0.0f);
-        SetStat(StatsEnum.InstantKillChance, 0.0f);
-        SetStat(StatsEnum.StunningHitChance, 0.0f);
-        SetStat(StatsEnum.EnergyAfterDealingDamage, 10.0f);
-        SetStat(StatsEnum.EnergyAfterTakingDamage, 10.0f);
-        
-        for (int i=0; i < Enum.GetNames(typeof(StatsEnum)).Length; i++)
-        {
-            allBuffStats[i] = 0.0f;
-        }
-    }
 
-    float GetStat(StatsEnum stat)
-    {
-        return allStats[(int)stat];
+        weaponController.WeaponDisplay(storageWeapon[firstWeapon].GetWeaponName(), isRunning);
     }
     
-    public bool IsStunning()
-    {
-        return Luck(GetStat(StatsEnum.StunningHitChance));
-    }
-    
-    public bool IsInstantKill()
-    {
-        return Luck(GetStat(StatsEnum.InstantKillChance));
-    }
-    
-    public int HpCollecting()
-    {
-        return (int)GetStat(StatsEnum.CollectPercentageHealth);
-    }
-    
-    public void IncreaseBuffStat(StatsEnum stat, float value)
-    {
-        allBuffStats[(int)stat] += value;
-    }
-
-    void SetStat(StatsEnum stat, float value)
-    {
-        allStats[(int)stat] = value;
-    }
-    
-    public void IncreaseStat(StatsEnum stat, float value)
-    {
-        allStats[(int)stat] += value;
-    }
-
+    //init
     void Init()
     {
-        RestartStats();
+        SetBaseStats();
         currentlyHealth = maxHealth;
         currentlyEnergy = 0;
         currentlyExperience = 0;
         detectability = 8.0f;
-        healthBar.SetMaxHealth(maxHealth);   
-        energyBar.SetMaxEnergy(maxEnergy);
-        experienceBar.SetMaxExperience(maxExperience);
-        healthBar.SetHealth(currentlyHealth);   
+        healthBar.SetMaxHealth((int)maxHealth);   
+        energyBar.SetMaxEnergy(MaxEnergy);
+        experienceBar.SetMaxExperience(MaxExperience);
+        healthBar.SetHealth((int)currentlyHealth);   
         energyBar.SetEnergy(currentlyEnergy);
         experienceBar.SetExperience(currentlyExperience);
         level = 0;
-        isSpecial = false;
+        isFury = false;
         isRoll = false;
+        
+        
+        float[] createdStat = { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
+        firstWeapon = 0;
+        Weapon newFirst = gameObject.AddComponent<Sword>();
+        newFirst.SetStats(createdStat);
+        newFirst.SetWeapon(GetAllStats(), GetAllBuffStats());
+        
+        StartWeapon(newFirst);
+
+        float[] gfggg = { 1, 2, 3, 4, 5, 5, 5, 5, 5, 5, 5, 5 };
+        firstWeapon = 0;
+        Weapon rrrr = gameObject.AddComponent<Crossbow>();
+        newFirst.SetStats(gfggg);
+        rrrr.SetWeapon(GetAllStats(), GetAllBuffStats());
+
+        EquipNewWeapon(rrrr, 3);
     }
     
     //triggered every 1 second
     void Regenerate()
     {
-        IncreaseHealth(iSCombat ? GetStat(StatsEnum.RegenerationRate) : GetStat(StatsEnum.RegenerationRateOutOfCombat));
+        IncreaseHealth(isCombat ? GetStat(StatsEnum.RegenerationRate) : GetStat(StatsEnum.RegenerationRateOutOfCombat));
 
-
-        if (isSpecial)
+        if (isFury)
         {
             if (currentlyEnergy > 0)
             {
@@ -256,65 +308,189 @@ public abstract class Hero : MonoBehaviour
             else
             {
                 ResetBuffs();
-                isSpecial = false;
+                isFury = false;
             }
-            
         }
     }
 
-    public int TotalDamage()
+    //combat system
+    public float TotalDamage()
     {
-        float summaryDamage = GetStat(StatsEnum.Damage);
+        float summaryDamage = GetWeapon().GetBaseDamage()*GetStat(StatsEnum.Damage);
         int iter;
 
         iter = punchesSeries>3 ? 3 : punchesSeries;
         
         for (int i = 0; i<iter;i++)
         {
-            summaryDamage += GetStat(StatsEnum.SeriesDamage);
+            summaryDamage += GetWeapon().GetBaseSeriesDamage()*GetStat(StatsEnum.SeriesDamage);
         }
         
         if (Luck(GetStat(StatsEnum.CriticalHitChance)))
         {
-            summaryDamage +=  GetStat(StatsEnum.CriticalDamage);
+            summaryDamage +=  GetWeapon().GetBaseDamage()*GetStat(StatsEnum.CriticalDamage);
         }
 
-        return (int)summaryDamage;
+        return summaryDamage;
     }
     
-    public int ReflectingDamage()
+    public void TakeDamage(float enemyDamage)
     {
-        return (int)GetStat(StatsEnum.ReflectingDamage);
+        if (!Luck(GetStat(StatsEnum.DodgeChance)))
+        {
+            isCombat = true;
+            StartCoroutine(OutOfCombat());
+            StartCoroutine(ResetIsGetHit());
+            isGetHit = true;
+            currentlyHealth -= enemyDamage - enemyDamage*GetStat(StatsEnum.Resistance);
+            IncreaseEnergy(GetStat(StatsEnum.EnergyAfterTakingDamage));
+        }
     }
-   
-    private static bool Luck(float chance)
+
+    void DeathPlayer()
     {
-        return Random.Range(0, 100) < chance;
+        if (Luck(GetStat(StatsEnum.RevivalChance)))
+        {
+            currentlyHealth = maxHealth;
+        }
+        else
+        {
+            allStats[storageWeapon[firstWeapon].GetWeaponType()][(int)StatsEnum.MoveSpeed] = 0.0f;
+            
+            rotateSpeed = 0f;
+            isDeath = true;
+        }
+    }
+
+    public void ChangeWeapon(int newSelected)
+    {
+        if (storageWeapon[newSelected] is not null)
+        {
+            firstWeapon = newSelected;
+        }
+    }
+    
+    public void EquipNewWeapon(Weapon newSelected, int pos)
+    {
+        if (pos == firstWeapon)
+        {
+            storageWeapon[pos].DeletedWeaponStats();
+            storageWeapon[pos] = newSelected;
+            storageWeapon[pos].AddWeaponStats();
+        }
+        else
+        {
+            storageWeapon[pos] = newSelected;
+        }
+    }
+    
+    public Weapon GetWeapon()
+    {
+        return storageWeapon[firstWeapon];
+    }
+    
+    public Weapon[] GetAllWeapon()
+    {
+        return storageWeapon;
+    }
+    
+    // getter and setter stats
+    public float GetStat(StatsEnum selectedStat)
+    {
+        return allStats[storageWeapon[firstWeapon].GetWeaponType()][(int)selectedStat];
+    }
+    
+    public float[][] GetAllStats()
+    {
+        return allStats;
+    }
+    
+    public float[][] GetAllBuffStats()
+    {
+        return allBuffStats;
+    }
+    
+    public void SetStat(StatsEnum stat, WeaponType selectedType, float value)
+    {
+        allStats[(int)selectedType][(int)stat] = value;
+    }
+
+    public void IncreaseStat(StatsEnum stat, WeaponType selectedType, float value)
+    {
+        allStats[(int)selectedType][(int)stat] += value;
+    }
+    
+    // fury buffs
+    public float GetBuffStat(StatsEnum selectedStat)
+    {
+        return allBuffStats[storageWeapon[firstWeapon].GetWeaponType()][(int)selectedStat];
+    }
+    
+    public void SetBuffStat(StatsEnum stat, WeaponType selectedType, float value)
+    {
+        allBuffStats[(int)selectedType][(int)stat] = value;
+    }
+    public void IncreaseBuffStat(StatsEnum stat, WeaponType selectedType, float value)
+    {
+        allBuffStats[(int)selectedType][(int)stat] += value;
+    }
+    void GetBuffs()
+    {
+        for (int i=0; i < Enum.GetNames(typeof(StatsEnum)).Length; i++)
+        {
+            allStats[storageWeapon[firstWeapon].GetWeaponType()][i] += allBuffStats[storageWeapon[firstWeapon].GetWeaponType()][i];
+        }
+    }
+    
+    void ResetBuffs()
+    {
+        for (int i=0; i < Enum.GetNames(typeof(StatsEnum)).Length; i++)
+        {
+            allStats[storageWeapon[firstWeapon].GetWeaponType()][i] -= allBuffStats[storageWeapon[firstWeapon].GetWeaponType()][i];
+        }
+    }
+    
+    //methods to override
+    public virtual void SetBaseStats()
+    {
+        
+    }
+    
+    protected void StartWeapon(Weapon startWeapon)
+    {
+        storageWeapon[firstWeapon] = startWeapon;
     }
 
     
+    protected virtual void SpecialSpell()
+    {
+        
+    }
+    
+    //health
     void IncreaseHealth(float health)
     {
         if (currentlyHealth < maxHealth)
         {
             currentlyHealth += ((int)health);
         }
-        healthBar.SetHealth(currentlyHealth);
+        healthBar.SetHealth((int)currentlyHealth);
     }
-
-
+    
+    //energy
     void IncreaseEnergy(float energy)
     {
-        if (currentlyEnergy < maxEnergy && !isSpecial)
+        if (currentlyEnergy < MaxEnergy && !isFury)
         {
             currentlyEnergy += ((int)energy);
             energyBar.SetEnergy(currentlyEnergy);
         }
     }
     
+    //level
     void IncreaseExperience(int exp)
     {
-        if (currentlyExperience< maxExperience)
+        if (currentlyExperience< MaxExperience)
         {
             currentlyExperience += exp;
         }
@@ -332,70 +508,50 @@ public abstract class Hero : MonoBehaviour
         lvlDisplay.SetLvl(level);
         skillTree.UpLevel();
     }
-
-    void GetBuffs()
-    {
-        for (int i=0; i < Enum.GetNames(typeof(StatsEnum)).Length; i++)
-        {
-            allStats[i] += allBuffStats[i];
-        }
-    }
     
-    private void ResetBuffs()
-    {
-        for (int i=0; i < Enum.GetNames(typeof(StatsEnum)).Length; i++)
-        {
-            allStats[i] -= allBuffStats[i];
-        }
-    }
-    
-    void SpecialSpell()
-    {
-        
-    }
-
-    public float GetDetectability()
-    {
-        return detectability - GetStat(StatsEnum.LessDetectability);
-    }
-
-    
+    //money
     void AddMoney(int earnedMoney)
     {
-        money += (int)(earnedMoney + earnedMoney*GetStat(StatsEnum.PercentExtraMoney));
+        money += (int)(earnedMoney + (earnedMoney*GetStat(StatsEnum.PercentExtraMoney)));
         moneyDisplay.SetMoney(money);
     }
     
-    void DecreaseMoney(int decreaseMoney)
+    void SpendMoney(int decreaseMoney)
     {
         money -= decreaseMoney;
         moneyDisplay.SetMoney(money);
     }
     
-    public void TakeDamage(float enemyDamage)
+    //getters
+    public float ReflectingDamage(float takingDamage)
     {
-        if (!Luck(GetStat(StatsEnum.DodgeChance)))
-        {
-            StartCoroutine(ResetIsGetHit());
-            isGetHit = true;
-            currentlyHealth -= (int)(enemyDamage - GetStat(StatsEnum.Resistance));
-            IncreaseEnergy(GetStat(StatsEnum.EnergyAfterTakingDamage));
-        }
+        return GetStat(StatsEnum.ReflectingDamage) * takingDamage;
+    }
+    
+    public float GetDetectability()
+    {
+        return detectability - GetStat(StatsEnum.LessDetectability);
+    }
+    
+    //getters and luck
+    public bool IsStunning()
+    {
+        return Luck(GetStat(StatsEnum.StunningHitChance));
+    }
+    
+    public bool IsInstantKill()
+    {
+        return Luck(GetStat(StatsEnum.InstantKillChance));
+    }
+    
+    public int HpCollecting()
+    {
+        return (int)GetStat(StatsEnum.CollectPercentageHealth);
     }
 
-    void DeathPlayer()
+    private static bool Luck(float chance)
     {
-        if (Luck(GetStat(StatsEnum.RevivalChance)))
-        {
-            currentlyHealth = maxHealth;
-        }
-        else
-        {
-            SetStat(StatsEnum.MoveSpeed, 1.0f);
-            rotateSpeed = 0f;
-            isDeath = true;
-        }
-        
+        return Random.Range(0, 100) < chance;
     }
     
     //Cooldown animation
@@ -419,7 +575,7 @@ public abstract class Hero : MonoBehaviour
     private IEnumerator OutOfCombat()
     {
         yield return new WaitForSeconds(5.0f);
-        iSCombat = false;
+        isCombat = false;
         punchesSeries = 0;
     }
 

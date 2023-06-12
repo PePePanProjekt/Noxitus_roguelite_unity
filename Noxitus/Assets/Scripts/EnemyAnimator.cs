@@ -9,7 +9,7 @@ public class EnemyAnimator : MonoBehaviour
     private const string IS_ENEMY_RUNNING = "IsEnemyRunning";
     private const string IS_ENEMY_ATTACK = "IsEnemyAttack";
     private const string IS_ENEMY_Death = "IsEnemyDeath";
-    
+    private const string IS_ENEMY_STUNNED = "IsEnemyStunned";
     [SerializeField] private Enemy enemy;
 
     private Animator _animator;
@@ -34,6 +34,7 @@ public class EnemyAnimator : MonoBehaviour
             _animator.ResetTrigger("TriggGetHit");
         }
         _animator.SetBool(IS_ENEMY_Death,enemy.IsEnemyDeath());
-        enemy.DisableRoll();
+        _animator.SetBool(IS_ENEMY_STUNNED,enemy.IsEnemyStunned());
+        
     }
 }

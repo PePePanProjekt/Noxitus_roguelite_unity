@@ -3,40 +3,43 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    [SerializeField] private int maxHealth = 100;
-    public int damage;
-    private int currentlyHealth;
+    [SerializeField] private float maxHealth = 100;
+    public float damage;
+    private float currentlyHealth;
 
     [SerializeField] private Player player;
-    private bool isEnemyRunning, isEnemyAttack, isGetHit, isDeath;
+    
+    private bool isEnemyRunning, isEnemyAttack, isGetHit, isDeath,isAttack, isStunning;
     Transform playerPos;
-    [SerializeField] float enemySpeed = 6f;
-    float dis, disHome;
+    
+    [SerializeField] float enemySpeed = 4f;
+    float dis, disHome, disDetect, oldSpeed;
+    
     Vector3 startPos;
-    private float disDetect;
-    private bool block, isStunning;
-    // Start is called before the first frame update
+    
     void Start()
     {
+        oldSpeed = enemySpeed;
         playerPos = GameObject.FindGameObjectWithTag("Player").transform;
         startPos = transform.position;
-        InvokeRepeating(nameof(ClearBlock), 1.0f, 1.0f);
         currentlyHealth = maxHealth;
         damage = 5;
+        
     }
-
-    // Update is called once per frame
+    
     void Update()
     {
-        player = Player.Instance;
-        var position = transform.position;
-        dis = Vector3.Distance(position, playerPos.position);
-        disHome = Vector3.Distance(position, startPos);
         
-        disDetect = player.GetHero().GetDetectability();
-        if (!isStunning)
+        if (!isStunning && !player.GetHero().IsDeath() && !isDeath)
         {
-            if (dis is > 0.7f && dis <= disDetect)
+            player = Player.Instance;
+            var position = transform.position;
+            dis = Vector3.Distance(position, playerPos.position);
+            disHome = Vector3.Distance(position, startPos);
+        
+            disDetect = player.GetHero().GetDetectability();
+
+            if (dis > 0.7f && dis <= disDetect)
             {
                 isEnemyAttack = false;
                 isEnemyRunning = true;
@@ -60,26 +63,29 @@ public class Enemy : MonoBehaviour
             {
                 isEnemyRunning = false;
                 isEnemyAttack = true;
-                if (!block)
+                if (!isAttack)
                 {
-                    block = true;
+                    isAttack = true;
+                    StartCoroutine(ResetAttack());
                     Attack();
                 }
             }
-        }
-
-        if (currentlyHealth <= 0)
-        {
-            DeathEnemy();
+            
+            if (currentlyHealth <= 0)
+            {
+                DeathEnemy();
+            }
         }
     }
     
-    private void TakeDamage(int playerDamage)
+    private void TakeDamage(float playerDamage)
     {
         currentlyHealth -= playerDamage;
-        if (player.GetHero().IsStunning())
+        if (player.GetHero().IsStunning() && player.GetHero().IsAttack())
         {
             isStunning = true;
+            enemySpeed = 0.0f;
+            StartCoroutine(ResetStun());
         }
 
         if (player.GetHero().IsInstantKill())
@@ -95,18 +101,19 @@ public class Enemy : MonoBehaviour
 
     void DeathEnemy()
     {
+        isAttack = true;
+        enemySpeed = 0.0f;
         isDeath = true;
+        
     }
     
     void Chase()
     {
-        transform.LookAt(playerPos);
-        transform.Translate(0, 0, enemySpeed * Time.deltaTime);
-    }
-
-    void ClearBlock()
-    {
-        block = false;
+        if (!isStunning)
+        {
+            transform.LookAt(playerPos);
+            transform.Translate(0, 0, enemySpeed * Time.deltaTime);
+        }
     }
 
     void GoHome()
@@ -116,10 +123,10 @@ public class Enemy : MonoBehaviour
         transform.position = Vector3.Lerp(transform1.position, startPos, (enemySpeed * Time.deltaTime)/2);
     }
     
-    void  Attack()
+    void Attack()
     {
         player.GetHero().TakeDamage(damage);
-        TakeDamage(player.GetHero().ReflectingDamage());
+        TakeDamage(player.GetHero().ReflectingDamage(damage));
     }
     
     public bool IsEnemyGetHit()
@@ -142,12 +149,11 @@ public class Enemy : MonoBehaviour
         return isEnemyRunning;
     }
     
-    public void DisableRoll()
+    public bool IsEnemyStunned()
     {
-        isGetHit = false;
-
+        return isStunning;
     }
-    
+
     IEnumerator ResetGetHit()
     {
         
@@ -157,18 +163,24 @@ public class Enemy : MonoBehaviour
     
     IEnumerator ResetStun()
     {
-        yield return new WaitForSeconds(2.0f);
+        yield return new WaitForSeconds(3.0f);
+        enemySpeed = oldSpeed;
         isStunning = false;
+    }
+    
+    IEnumerator ResetAttack()
+    {
+        yield return new WaitForSeconds(1.0f);
+        isAttack = false;
     }
     
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Sword") && !isGetHit)
+        if (other.CompareTag("Sword") && !isDeath && player.GetHero().IsAttack())
         {
             StartCoroutine(ResetGetHit());
             isGetHit = true;
             TakeDamage(player.GetHero().TotalDamage());
-       
         }
     }
 }

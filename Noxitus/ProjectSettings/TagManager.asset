@@ -4,14 +4,17 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Enemy
-  - Sword
-  - HealthBar
   - EnergyBar
-  - Money
-  - ExperienceBar
   - Lvl
+  - HealthBar
+  - ExperienceBar
+  - Notification
   - SkillTree
+  - Money
+  - Enemy
+  - WeaponController
+  - Sword
+  - Inventory
   layers:
   - Default
   - TransparentFX
@@ -19,6 +22,8 @@ TagManager:
   - 
   - Water
   - UI
+  - Ground
+  - Wall
   - 
   - 
   - 
@@ -30,9 +35,7 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
-  - 
+  - Hitbox
   - 
   - 
   - 

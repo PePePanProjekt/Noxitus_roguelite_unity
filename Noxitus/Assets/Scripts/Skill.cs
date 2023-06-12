@@ -1,8 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
-using UnityEngine.Serialization;
+
 using UnityEngine.UI;
 
 public class Skill : MonoBehaviour
@@ -18,6 +17,7 @@ public class Skill : MonoBehaviour
     [Range(0,100)]
     [SerializeField] private int requirePointsInTree;
     [SerializeField] private SelectTree selectTree;
+    [SerializeField] private WeaponType selectWeapon;
     [SerializeField] private bool isSpecial;
     
     private int  currentlyPoints;
@@ -92,9 +92,14 @@ public class Skill : MonoBehaviour
         return skillDescription;
     }
     
-    public SelectTree  GetSelectTree()
+    public SelectTree GetSelectTree()
     {
         return selectTree;
+    }
+    
+    public WeaponType GetSelectWeaponType()
+    {
+        return selectWeapon;
     }
     
     public int GetCurrentlyPoints()
