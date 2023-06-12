@@ -32,6 +32,7 @@ public class Enemy : MonoBehaviour
         
         if (!isStunning && !player.GetHero().IsDeath() && !isDeath)
         {
+            player = Player.Instance;
             var position = transform.position;
             dis = Vector3.Distance(position, playerPos.position);
             disHome = Vector3.Distance(position, startPos);

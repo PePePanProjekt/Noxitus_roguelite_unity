@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Noxitus/Assets/Scripts/Berserker.cs.meta
 guid: 0b661165e1ac26544b6bb5ad9df1e905
+========
+guid: 99f3664a181592d4dbf4b40de0c448e6
+>>>>>>>> fdd1b6f (new Inupt system, colider, walls):Noxitus/Assets/PlayerInputActions.cs.meta
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
